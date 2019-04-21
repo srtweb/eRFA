@@ -21,7 +21,7 @@ export default class ERfaCompWebPart extends BaseClientSideWebPart<IERfaCompWebP
     const element: React.ReactElement<IERfaCompProps > = React.createElement(
       ERfaComp,
       {
-        description: this.properties.description
+         currentContext: this.context
       }
     );
 
