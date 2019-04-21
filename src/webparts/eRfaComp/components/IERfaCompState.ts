@@ -1,8 +1,12 @@
 export interface IERfaCompState {
-    selectedUsers: IUser[];
+    selectedApproversEndorsers: IUser[]; //For Approvers & Endorsers
+    selectedApprovers: IUser[]; //For Approvers
+    selectedEndorsers: IUser[]; //For Endorsers
+    selectedInformed: IUser[]; //For Informed
 } 
 
 export interface IUser {
     displayName: string;
     email: string;
+    userType?:string; //Approver/Endorser/Informed
 }
