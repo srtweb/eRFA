@@ -18,77 +18,75 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     super(props);
 
     this.state = {
-      selectedUsers: [],
-      items: ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6']
+      selectedUsers: []
     };
 
-    this._addUsersClicked = this._addUsersClicked.bind(this);
+    //This function executes when add/remove from People
     this._getPeoplePickerItems = this._getPeoplePickerItems.bind(this);
+    this._onSortEnd = this._onSortEnd.bind(this);
   }
 
   public render(): React.ReactElement<IERfaCompProps> {
-
     return (
-      <div className={ styles.eRfaComp }>
-      <PeoplePicker
-            context={this.props.currentContext}
-            titleText="Select Users"
-            personSelectionLimit={3}
-            showtooltip={true}
-            isRequired={true}
-            selectedItems={this._getPeoplePickerItems}
-            showHiddenInUI={false}
-            principalTypes={[PrincipalType.User]}
-            resolveDelay={1000} />
+      <div>
+        <div className={ styles.eRfaComp }>
+        <PeoplePicker
+              context={this.props.currentContext}
+              titleText="Select Users"
+              personSelectionLimit={3}
+              showtooltip={true}
+              isRequired={true}
+              selectedItems={this._getPeoplePickerItems}
+              showHiddenInUI={false}
+              principalTypes={[PrincipalType.User]}
+              resolveDelay={1000} />
+        <div>
 
-        <div>
-            <PrimaryButton onClick={this._addUsersClicked}>
-              Add Users
-            </PrimaryButton>
         </div>
-        <div>
-          <SortableList items={this.state.items} onSortEnd={this.onSortEnd}/>  
+          { this.state.selectedUsers.length > 0 &&
+            <div>
+              <SortableList items={this.state.selectedUsers} onSortEnd={this._onSortEnd}/>  
+            </div>
+          }
         </div>
       </div>
     );
   }
 
   public componentDidMount(): void {
-    const SortableItem = SortableElement(({value}) => <li>{value}</li>);
+    let SortableItem = SortableElement(({value}) => <div><b>{value}</b></div>);
 
+    //Populating users for drag anf drop
     SortableList = SortableContainer(({items}) => {
       return (
         <ul>
           {items.map((value, index) => (
-            <SortableItem key={`item-${index}`} index={index} value={value} />
+            <SortableItem key={`item-${index}`} index={index} value={value.displayName} />
           ))}
         </ul>
       );
     });
   }
 
-  onSortEnd = ({oldIndex, newIndex}) => {
-    this.setState(({items}) => ({
-      items: arrayMove(items, oldIndex, newIndex),
+  //Move users
+  private _onSortEnd = ({oldIndex, newIndex}) => {
+    this.setState(({selectedUsers}) => ({
+      selectedUsers: arrayMove(selectedUsers, oldIndex, newIndex),
     }));
-  };
+  }
 
   //Executes when add/remove users to People Picker control
+  //Items = Selected PeoplePicker Users
   private _getPeoplePickerItems(items: any[]) {
-    console.log('Items:', items);
     let _users: IUser[] = [];
+
     if(items.length > 0) {
       items.map((item) => {
         _users.push({displayName:item.text, email: item.secondaryText})
-      })
-      
-      this.setState
+      });
     }
-  }
-
-  private _addUsersClicked(): void {
     this.setState({
-      selectedUsers: _selectedUsers
+      selectedUsers: _users
     });
   }
 }
