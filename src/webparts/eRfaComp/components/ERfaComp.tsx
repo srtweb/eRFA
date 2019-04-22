@@ -6,10 +6,9 @@ import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 import { IERfaCompState, IUser } from './IERfaCompState';
 //https://github.com/clauderic/react-sortable-hoc
 //https://www.npmjs.com/package/array-move
+//https://www.npmjs.com/package/array-move
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
-
-let _selectedUsers: IUser[];
 
 let SortableList:any = '';
 
@@ -37,6 +36,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
   public render(): React.ReactElement<IERfaCompProps> {
     return (
       <div>
+        {/* Displaying People Pickers */}
         <div className={ styles.eRfaComp }>
           <PeoplePicker
                 context={this.props.currentContext}
@@ -48,8 +48,8 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
                 showHiddenInUI={false}
                 principalTypes={[PrincipalType.User]}
                 resolveDelay={1000} />
-        <div>
-        <PeoplePicker
+    
+          <PeoplePicker
                 context={this.props.currentContext}
                 titleText="Endorsers"
                 personSelectionLimit={3}
@@ -59,7 +59,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
                 showHiddenInUI={false}
                 principalTypes={[PrincipalType.User]}
                 resolveDelay={1000} />
-        <PeoplePicker
+          <PeoplePicker
                 context={this.props.currentContext}
                 titleText="Informed"
                 personSelectionLimit={3}
@@ -69,10 +69,11 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
                 showHiddenInUI={false}
                 principalTypes={[PrincipalType.User]}
                 resolveDelay={1000} />
-
-          
-
         </div>
+        
+        {/* Displaying Selected Approvers and Endorsers
+          Check ComponentDidMount for detailed strucure */}
+        <div>
           { this.state.selectedApproversEndorsers.length > 0 &&
             <div>
               <SortableList items={this.state.selectedApproversEndorsers} onSortEnd={this._onSortEnd}/>  
@@ -80,6 +81,8 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
           }
         </div>
         
+        {/* Displaying Selected Informed 
+          Check ComponentDidMount for detailed strucure*/}  
         <div>
           { this.state.selectedInformed.length > 0 &&
             <div>
@@ -90,10 +93,15 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
 
       </div>
     );
+    
   }
 
   public componentDidMount(): void {
-    let SortableItem = SortableElement(({value}) => <div><b>{value.displayName} - {value.userType}</b></div>);
+    let SortableItem = SortableElement(({value}) => 
+      <div>
+        <b>{value.displayName} - {value.userType}</b>
+      </div>
+    );
 
     //Populating users for drag and drop
     SortableList = SortableContainer(({items}) => {
@@ -107,6 +115,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     });
   }
 
+  
   //Move users
   private _onSortEnd = ({oldIndex, newIndex}) => {
     this.setState(({selectedApproversEndorsers}) => ({
@@ -123,7 +132,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
       //Go through all selected users
       items.map((item) => {
         //Build users array
-        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Approvers'})
+        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Approvers'});
       });
     }
 
@@ -154,7 +163,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     if(items.length > 0) {
       items.map((item) => {
         //Build selected Endorsers array
-        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Endorsers'})
+        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Endorsers'});
       });
     }
     this.setState({
@@ -182,7 +191,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     if(items.length > 0) {
       items.map((item) => {
         //Build selected Informed array
-        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Informed'})
+        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Informed'});
       });
     }
     this.setState({
