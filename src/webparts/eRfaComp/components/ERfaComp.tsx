@@ -9,6 +9,8 @@ import { IERfaCompState, IUser } from './IERfaCompState';
 //https://www.npmjs.com/package/array-move
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
+import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup'; 
+import { SelectedUsers } from './SelectedUsers';
 
 let SortableList:any = '';
 
@@ -31,11 +33,13 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     this._getInformed = this._getInformed.bind(this);
     //Function works on drag/drop user name
     this._onSortEnd = this._onSortEnd.bind(this);
+    //Executes on Radio selection change
+    this._rdoOnChange = this._rdoOnChange.bind(this);
   }
 
   public render(): React.ReactElement<IERfaCompProps> {
     return (
-      <div>
+      <div className={styles.eRfaComp}>
         {/* Displaying People Pickers */}
         <div className={ styles.eRfaComp }>
           <PeoplePicker
@@ -76,6 +80,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         <div>
           { this.state.selectedApproversEndorsers.length > 0 &&
             <div>
+              <div className={styles.titleText}>Selected Approvers/Endorsers {this.state.selectedApproversEndorsers.length}</div>
               <SortableList items={this.state.selectedApproversEndorsers} onSortEnd={this._onSortEnd}/>  
             </div>
           }
@@ -86,11 +91,10 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         <div>
           { this.state.selectedInformed.length > 0 &&
             <div>
-              <SortableList items={this.state.selectedInformed}/>  
+              <SelectedUsers users={this.state.selectedInformed}/>  
             </div>
           }
         </div>
-
       </div>
     );
     
@@ -100,6 +104,8 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     let SortableItem = SortableElement(({value}) => 
       <div>
         <b>{value.displayName} - {value.userType}</b>
+        <input type='radio' name={value.displayName} value='Sequential' onChange={this._rdoOnChange} />Sequential
+        <input type='radio' name={value.displayName} value='Parallel' onChange={this._rdoOnChange} />Parallel
       </div>
     );
 
@@ -115,12 +121,34 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     });
   }
 
+
+  private _rdoOnChange(event) {
+    console.log(event.target.name + ' - ' + event.target.value);
+    if(this.state.selectedApproversEndorsers.length > 0) {
+      let _users: IUser[] = [];
+      
+      this.state.selectedApproversEndorsers.map(selecteduser => {
+        if(selecteduser.displayName === event.target.name) {
+          _users.push({displayName:selecteduser.displayName, email: selecteduser.email, userType: selecteduser.userType, wfType: event.target.value, UserNameAndType:selecteduser.UserNameAndType});
+        }
+        else {
+          _users.push(selecteduser);
+        }
+      });
+      
+      this.setState({
+        selectedApproversEndorsers: _users
+      });
+    }
+  }
   
   //Move users
   private _onSortEnd = ({oldIndex, newIndex}) => {
-    this.setState(({selectedApproversEndorsers}) => ({
-      selectedApproversEndorsers: arrayMove(selectedApproversEndorsers, oldIndex, newIndex),
-    }));
+    if(oldIndex != newIndex) {
+      this.setState(({selectedApproversEndorsers}) => ({
+        selectedApproversEndorsers: arrayMove(selectedApproversEndorsers, oldIndex, newIndex),
+      }));
+    }
   }
 
   //Executes when add/remove users from People Picker control
@@ -132,7 +160,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
       //Go through all selected users
       items.map((item) => {
         //Build users array
-        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Approvers'});
+        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Approvers', wfType: 'Sequential', UserNameAndType:item.text+'Approvers'});
       });
     }
 
@@ -163,7 +191,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     if(items.length > 0) {
       items.map((item) => {
         //Build selected Endorsers array
-        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Endorsers'});
+        _users.push({displayName:item.text, email: item.secondaryText, userType: 'Endorsers', wfType: 'Sequential', UserNameAndType:item.text+'Endorsers'});
       });
     }
     this.setState({

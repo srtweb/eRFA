@@ -1,6 +1,18 @@
 @import '~@microsoft/sp-office-ui-fabric-core/dist/sass/SPFabricCore.scss';
 
 .eRfaComp {
+    .boxPanel{width:1200px; margin: 0px; padding: 10px 10px;}
+    .divPanel{width:100%; clear: both; box-sizing: border-box;}
+    .divSubPanel{float:left; padding: 5px 10px; box-sizing: border-box;}
+    .divSubPanel textarea{width:100%;}
+    .titleText{padding: 5px 10px;color:$ms-color-themePrimary; font-weight: bold; font-size: 14px; clear: both; margin-top: 10px; display: inline-block;}
+    .divBorder{border:1px solid #c1ded9;display: inline-block;box-sizing: content-box;}
+    .divHeader{background-color: #c1ded9; text-align: left;font-weight: bold;font-size: 12px;}
+    .divContent{background-color: $ms-color-themeDark; float:left; padding: 5px 10px; box-sizing: border-box; text-align: left;font-weight: normal;font-size: 12px;}
+    .btn{background-color: #1e438a;color: #ffffff;border: 1px solid #1e438a; border-radius: 4px;padding: 5px 10px;font-size:12px;}
+    .btn2{background-color: #cccccc;color: #ffffff;border: 1px solid #dddddd;border-radius: 12px;padding: 2px 10px;min-width: 80px;font-size: 12px;}  
+
+
   .container {
     max-width: 700px;
     margin: 0px auto;
@@ -25,6 +37,7 @@
   .title {
     @include ms-font-xl;
     @include ms-fontColor-white;
+    font-weight: bolder;
   }
 
   .subTitle {
