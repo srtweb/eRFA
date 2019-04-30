@@ -3,7 +3,9 @@ export interface IERfaCompState {
     selectedApprovers: IUser[]; //For Approvers
     selectedEndorsers: IUser[]; //For Endorsers
     selectedInformed: IUser[]; //For Informed
-    selectedInformedUsers: string[];
+    selectedApproverUsers: string[]; //TO prepopulate exising Approver Users
+    selectedEndorderUsers: string[]; ////TO prepopulate exising Endorser Users
+    selectedInformedUsers: string[]; //TO prepopulate exising Informed Users
 } 
 
 export interface IUser {

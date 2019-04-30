@@ -9,10 +9,12 @@ import { IERfaCompState, IUser } from './IERfaCompState';
 //https://www.npmjs.com/package/array-move
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
-import { SelectedUsers } from './SelectedUsers';
+import { InformedUsers } from './InformedUsers';
 import * as strings from 'ERfaCompWebPartStrings';
 
 let SortableList: any = '';
+let existingApproverUsers: string[] = [];
+let existingEndorserUsers: string[] = []; 
 let existingInformedUsers: string[] = [];
 
 export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompState> {
@@ -24,7 +26,9 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
       selectedApprovers: [], //For Approvers
       selectedEndorsers: [], //For Endorsers
       selectedInformed: [], //For Informed
-      selectedInformedUsers: []
+      selectedApproverUsers: [], //To prepopulate Approver PP
+      selectedEndorderUsers: [], //To prepopulate Endorser PP
+      selectedInformedUsers: [] //To prepopulate Informed PP
     };
 
     //This function executes when add/remove from Approvers
@@ -57,7 +61,8 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
             selectedItems={this._getApprovers}
             showHiddenInUI={false}
             principalTypes={[PrincipalType.User]}
-            resolveDelay={1000} />
+            resolveDelay={1000} 
+            defaultSelectedUsers= {this.state.selectedApproverUsers} />
 
           <PeoplePicker
             context={this.props.currentContext}
@@ -68,7 +73,8 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
             selectedItems={this._getEndorsers}
             showHiddenInUI={false}
             principalTypes={[PrincipalType.User]}
-            resolveDelay={1000} />
+            resolveDelay={1000} 
+            defaultSelectedUsers= {this.state.selectedEndorderUsers} />
           <PeoplePicker
             context={this.props.currentContext}
             titleText="Informed"
@@ -99,7 +105,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         <div>
           {this.state.selectedInformed.length > 0 &&
             <div>
-              <SelectedUsers users={this.state.selectedInformed} />
+              <InformedUsers users={this.state.selectedInformed} />
             </div>
           }
         </div>
@@ -111,30 +117,76 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
   }
 
   private _getExisingEmpData(): void {
+    /* Get exising data from SP List
+    * 
+    *
+    */
     let eInformed: string = '[{"displayName":"Srikanth Tiyyaguru","email":"srikanth@srtweb.onmicrosoft.com","userType":"Informed"}]';
-    let eData: string = '[{"displayName":"Ravi Coyajee","email":"RCoyajee@srtweb.onmicrosoft.com","userType":"Endorsers","wfType":"Sequential","UserNameAndType":"Ravi CoyajeeEndorsers"},{"displayName":"Srikanth Tiyyaguru","email":"srikanth@srtweb.onmicrosoft.com","userType":"Approvers","wfType":"Sequential","UserNameAndType":"Srikanth TiyyaguruApprovers"}]';
+    let eEndorser: string = '[{"displayName":"Ravi Coyajee","email":"RCoyajee@srtweb.onmicrosoft.com","userType":"Endorsers","wfType":"Sequential","UserNameAndType":"Ravi CoyajeeEndorsers"},{"displayName":"Srikanth Tiyyaguru","email":"srikanth@srtweb.onmicrosoft.com","userType":"Endorsers","wfType":"Sequential","UserNameAndType":"Srikanth TiyyaguruEndorsers"}]';
+    let eApprover: string = '[{"displayName":"Ravi Coyajee","email":"RCoyajee@srtweb.onmicrosoft.com","userType":"Approvers","wfType":"Sequential","UserNameAndType":"Ravi CoyajeeEndorsers"},{"displayName":"Srikanth Tiyyaguru","email":"srikanth@srtweb.onmicrosoft.com","userType":"Approvers","wfType":"Parallel","UserNameAndType":"Srikanth TiyyaguruApprovers"}]';
 
+    let existingApprover: IUser[] = [];
+    let existingEndorser: IUser[] = [];
+    let existingInformed: IUser[] = [];
+    let existingApproversEndorsers: IUser[] = [];
+    //Approvers
+    if(eApprover.length > 0) {
+      //Convert JSON to array (IUser[])
+      existingApprover = JSON.parse(eApprover);
+      if(existingApprover.length > 0) {
+        //Populate 'existingInformedUsers' - Used to pre-populate People Picker 
+        existingApprover.map(selecteduser => {
+          existingApproverUsers.push(selecteduser.email);
+        });
+      }
+    }
+
+    //Endorsers
+    if(eEndorser.length > 0) {
+      //Convert JSON to array (IUser[])
+      existingEndorser = JSON.parse(eEndorser);
+      if(existingEndorser.length > 0) {
+        //Populate 'existingInformedUsers' - Used to pre-populate People Picker 
+        existingEndorser.map(selecteduser => {
+          existingEndorserUsers.push(selecteduser.email);
+        });
+      }
+    }
+
+    //Informed
     if(eInformed.length > 0) {
       //Convert JSON to array (IUser[])
-      let existingInformed: IUser[] = JSON.parse(eInformed);
+      existingInformed = JSON.parse(eInformed);
       if(existingInformed.length > 0) {
         //Populate 'existingInformedUsers' - Used to pre-populate People Picker 
         existingInformed.map(selecteduser => {
           existingInformedUsers.push(selecteduser.email);
         });
-
-        //Update State
-        this.setState({
-          selectedInformedUsers: existingInformedUsers,
-          selectedInformed: existingInformed
-        });
       }
     }
+
+    //Update State
+    this.setState({
+      selectedApproverUsers: existingApproverUsers,
+      selectedApprovers: existingApprover,
+      selectedEndorderUsers: existingEndorserUsers,
+      selectedEndorsers: existingEndorser,
+      selectedInformedUsers: existingInformedUsers,
+      selectedInformed: existingInformed,
+      selectedApproversEndorsers: [...existingApprover, ...existingEndorser] //Merge Approvers and Endorsers
+    });
 
   }
 
   private _saveItem() {
     console.log('saving...');
+    /*
+    * Save to SPList
+    * eApprover - Multi line
+    * eEndorser - Multi line
+    * eInformed - Multi line
+    * 
+    */
   }
 
   public componentDidMount(): void {
@@ -147,7 +199,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         <input type='radio' name={value.displayName} value='Sequential' onChange={this._rdoOnChange} />Sequential
         <input type='radio' name={value.displayName} value='Parallel' onChange={this._rdoOnChange} />Parallel
         */}
-        <select id={value.displayName} onChange={this._wfSelectionChange}>
+        <select id={value.displayName} onChange={this._wfSelectionChange} value='Parallel'>
           <option value="Sequential">Sequential</option>
           <option value="Parallel">Parallel</option>
         </select>
@@ -244,14 +296,14 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         //Build users array
         _users.push({ displayName: item.text, email: item.secondaryText, userType: 'Approvers', wfType: 'Sequential', UserNameAndType: item.text + 'Approvers' });
       });
-
-      //Update SelectedApprovers state
-      this.setState({
-        selectedApprovers: _users,
-      });
     }
 
-    if (this.state.selectedApproversEndorsers.length > 0) {
+    //Update SelectedApprovers state
+    this.setState({
+      selectedApprovers: _users,
+    });
+
+    if (this.state.selectedEndorsers.length > 0) {
       let _alreadySelectedEndorsers = this.state.selectedEndorsers;
       //Merge Approvers and Endorsers
       this.setState({
@@ -275,14 +327,14 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         //Build selected Endorsers array
         _users.push({ displayName: item.text, email: item.secondaryText, userType: 'Endorsers', wfType: 'Sequential', UserNameAndType: item.text + 'Endorsers' });
       });
-      
-      this.setState({
-        selectedEndorsers: _users,
-      });
     }
+
+    this.setState({
+      selectedEndorsers: _users,
+    });
     
 
-    if (this.state.selectedApproversEndorsers.length > 0) {
+    if (this.state.selectedApprovers.length > 0) {
       let _alreadySelectedApprovers = this.state.selectedApprovers;
       //Merge Approvers and Endorsers
       this.setState({
