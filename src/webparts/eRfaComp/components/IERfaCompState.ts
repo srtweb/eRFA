@@ -3,6 +3,7 @@ export interface IERfaCompState {
     selectedApprovers: IUser[]; //For Approvers
     selectedEndorsers: IUser[]; //For Endorsers
     selectedInformed: IUser[]; //For Informed
+    selectedInformedUsers: string[];
 } 
 
 export interface IUser {
