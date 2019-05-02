@@ -167,7 +167,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
 
     //Update State
     this.setState({
-      selectedApproverUsers: existingApproverUsers,
+      selectedApproverUsers: existingApproverUsers, //To populate PP
       selectedApprovers: existingApprover,
       selectedEndorderUsers: existingEndorserUsers,
       selectedEndorsers: existingEndorser,
@@ -187,10 +187,35 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     * eInformed - Multi line
     * 
     */
+   let eApprover: string = '';
+   let eEndorser: string = '';
+   let eInformed: string = '';
+    if(this.state.selectedApprovers != null && 
+        typeof(this.state.selectedApprovers) != undefined &&
+        this.state.selectedApprovers.length > 0) {
+          eApprover = JSON.stringify(this.state.selectedApprovers);
+    }
+
+    
+    if(this.state.selectedEndorsers != null && 
+      typeof(this.state.selectedEndorsers) != undefined &&
+      this.state.selectedEndorsers.length > 0) {
+        eEndorser = JSON.stringify(this.state.selectedEndorsers);
+    }
+    
+    if(this.state.selectedInformed != null && 
+      typeof(this.state.selectedInformed) != undefined &&
+      this.state.selectedInformed.length > 0) {
+        eInformed = JSON.stringify(this.state.selectedInformed);
+    }
+
+    //Save eApprover, eEndorser and eInformed to SP List
+
   }
 
+ 
   public componentDidMount(): void {
-    this._getExisingEmpData();
+    //this._getExisingEmpData();
 
     let SortableItem = SortableElement(({ value }) =>
       <div>
@@ -199,21 +224,21 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         <input type='radio' name={value.displayName} value='Sequential' onChange={this._rdoOnChange} />Sequential
         <input type='radio' name={value.displayName} value='Parallel' onChange={this._rdoOnChange} />Parallel
         */}
-        <select id={value.displayName} onChange={this._wfSelectionChange} value='Parallel'>
-          <option value="Sequential">Sequential</option>
-          <option value="Parallel">Parallel</option>
+        <select id={value.displayName} onChange={this._wfSelectionChange} value={strings.SequentialText}>
+          <option value={strings.SequentialText}>{strings.SequentialText}</option>
+          <option value={strings.ParallelText}>{strings.ParallelText}</option>
         </select>
 
         {/* Buttons should be enabled only for current logged in user */}
         {(this.props.currentContext.pageContext.user.displayName == value.displayName)
           ?
           <div>
-            <input type='button' id={value.displayName + 'Approve'} name='btnApprove' value={value.userType} />
+            <input type='button' id={value.displayName + 'Approve'} name='btnApprove' value={strings.ApproverButtonText} />
             <input type='button' id={value.displayName + 'Reject'} name='btnReject' value={strings.RejectedButtonText} />
           </div>
           :
           <div>
-            <input type='button' id={value.displayName + 'Approve'} name='btnApprove' value={value.userType} disabled />
+            <input type='button' id={value.displayName + 'Approve'} name='btnApprove' value={strings.ApproverButtonText} disabled />
             <input type='button' id={value.displayName + 'Reject'} name='btnReject' value={strings.RejectedButtonText} disabled />
           </div>
         }
