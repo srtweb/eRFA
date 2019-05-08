@@ -7,6 +7,7 @@ declare interface IERfaCompWebPartStrings {
   RejectedButtonText: string; //Button text for Approvers/Endorsers
   SequentialText: string; //Options for Approvers/Endorsers
   ParallelText: string; //Options for Approvers/Endorsers
+  UsersListName: string; //List name to save individual Users
 }
 
 declare module 'ERfaCompWebPartStrings' {

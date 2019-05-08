@@ -3,7 +3,7 @@ import styles from './ERfaComp.module.scss';
 import { IERfaCompProps } from './IERfaCompProps';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
-import { IERfaCompState, IUser } from './IERfaCompState';
+import { IERfaCompState, IUser, ISelectedUser } from './IERfaCompState';
 //https://github.com/clauderic/react-sortable-hoc
 //https://www.npmjs.com/package/array-move
 //https://www.npmjs.com/package/array-move
@@ -11,6 +11,7 @@ import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 import { InformedUsers } from './InformedUsers';
 import * as strings from 'ERfaCompWebPartStrings';
+import { sp, ItemAddResult } from "@pnp/sp";
 
 let SortableList: any = '';
 let existingApproverUsers: string[] = [];
@@ -46,6 +47,8 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
     //Save
     this._saveItem = this._saveItem.bind(this);
   }
+
+  
 
   public render(): React.ReactElement<IERfaCompProps> {
     return (
@@ -178,6 +181,30 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
 
   }
 
+  //Get the items based on eRFA Number
+  private _getSelectedUserItems(erfaNo: string): ISelectedUser[] {
+    let selectedUsers: ISelectedUser[] = [];
+
+    //Get items using PnP
+    sp.web.lists.getByTitle(strings.UsersListName).items.select('Title', 'UserEmail', 'WFType', 'UserType').filter("Title eq '" + erfaNo + "'").get().then((items: ISelectedUser[]) => {
+      console.log(items);
+  });
+
+    return selectedUsers;
+  }
+
+  //Add items to Users list
+  private _addUser(userToAdd: IUser): void {
+    sp.web.lists.getByTitle(strings.UsersListName).items.add({
+      Title: userToAdd.displayName,
+      UserEmail: userToAdd.email,
+      WFType: userToAdd.wfType,
+      UserType: userToAdd.userType
+      }).then((iar: ItemAddResult) => {
+        console.log(iar);
+    });
+  }
+
   private _saveItem() {
     console.log('saving...');
     /*
@@ -194,6 +221,11 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         typeof(this.state.selectedApprovers) != undefined &&
         this.state.selectedApprovers.length > 0) {
           eApprover = JSON.stringify(this.state.selectedApprovers);
+
+          //Save individual users
+          for(let iUser of this.state.selectedApprovers) {
+            this._addUser(iUser)
+          }
     }
 
     
@@ -211,11 +243,15 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
 
     //Save eApprover, eEndorser and eInformed to SP List
 
+    //Save individual items
+
+
   }
 
  
   public componentDidMount(): void {
     //this._getExisingEmpData();
+    this._getSelectedUserItems('1');
 
     let SortableItem = SortableElement(({ value }) =>
       <div>
@@ -224,12 +260,12 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
         <input type='radio' name={value.displayName} value='Sequential' onChange={this._rdoOnChange} />Sequential
         <input type='radio' name={value.displayName} value='Parallel' onChange={this._rdoOnChange} />Parallel
         */}
-        <select id={value.displayName} onChange={this._wfSelectionChange} value={strings.SequentialText}>
-          <option value={strings.SequentialText}>{strings.SequentialText}</option>
+        <select id={value.displayName} onChange={this._wfSelectionChange}>
           <option value={strings.ParallelText}>{strings.ParallelText}</option>
+          <option value={strings.SequentialText}>{strings.SequentialText}</option>
         </select>
 
-        {/* Buttons should be enabled only for current logged in user */}
+        {/* Buttons should be enabled only for current logged in user
         {(this.props.currentContext.pageContext.user.displayName == value.displayName)
           ?
           <div>
@@ -240,8 +276,8 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
           <div>
             <input type='button' id={value.displayName + 'Approve'} name='btnApprove' value={strings.ApproverButtonText} disabled />
             <input type='button' id={value.displayName + 'Reject'} name='btnReject' value={strings.RejectedButtonText} disabled />
-          </div>
-        }
+          </div> 
+        }*/}
       </div>
     );
 
@@ -264,7 +300,7 @@ export default class ERfaComp extends React.Component<IERfaCompProps, IERfaCompS
       let _users: IUser[] = [];
 
       this.state.selectedApproversEndorsers.map(selecteduser => {
-        if (selecteduser.displayName === event.id.name) {
+        if (selecteduser.displayName === event.target.id) {
           _users.push({ displayName: selecteduser.displayName, email: selecteduser.email, userType: selecteduser.userType, wfType: event.target.value, UserNameAndType: selecteduser.UserNameAndType });
         }
         else {

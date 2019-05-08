@@ -15,3 +15,10 @@ export interface IUser {
     wfType?:string; //Sequential/Parallel
     UserNameAndType?: string; //User Name and Type
 }
+
+export interface ISelectedUser {
+    Title: string;
+    UserEmail: string;
+    WFType?: string;
+    UserType: string;
+}
